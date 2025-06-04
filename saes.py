@@ -152,7 +152,7 @@ def expand_key(prev_key: list[list[int]], round_num: int) -> list[list[int]]:
     w2 = [w0[0] ^ g_w1[0], w0[1] ^ g_w1[1]]
     w3 = [w2[0] ^ w1[0], w2[1] ^ w1[1]]
 
-    return [w2, w3]
+    return [[w2[0], w3[0]], [w2[1], w3[1]]]
 
 
 #S-AES
