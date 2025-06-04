@@ -59,10 +59,39 @@ def substitute_nibbles(state: list[list[int]]) -> list[list[int]]:
 # meaning it can be reversed to decrypt the data. 
 #   ShiftRows(DF1A) = DA1F
 
+def shift_rows(state: list[list[int]]) -> list[list[int]]:
+    return [
+        state[0],
+        [state[1][1], state[1][0]]
+    ]
 
 #Mix Columns
 # Applies a matrix operation on the 16-bit state within the Galois field GF(16).
+# M = | 1  4 |
+#     | 4  1 |
+# Example: | 1  4 | | D  1 | => | ((1*D) ^ (4*A)) ((1*1) ^ (4*F)) |
+#         | 4  1 | | A  F |    | ((4*D) ^ (1*A)) ((4*1) ^ (1*F)) |
+# In the above example addition is done mod 2 (xor)
+# And multiplication is done mod x⁴ + x + 1 (mod 0x13)
 
+#Multiplication under GF(16) of two nibbles
+# Example:
+# a = 0b1011 = x³ + x + 1
+# b = 0b0101 = x² + 1
+# b0, b1, b2, b3 = 0b1, 0b0, 0b1, 0b0 
+# a * b = (b0 * a) + x(b1 * a) + x²(b2 * a) + x³(b3 * a)
+# => a * b = 1*a + 0 + x²(1*a) + 0
+
+def gf16_mul(a:int, b:int) -> int:
+    result = 0
+    for _ in range(4):
+        if b & 1:
+            result ^= a
+        b >>= 1
+        a <<= 1
+        if a & 0b10000:
+            a ^= 0x13
+    return result & 0xF
 
 #Expand Key
 # Computes round keys for each round.
