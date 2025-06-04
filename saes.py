@@ -105,11 +105,6 @@ def mix_columns(state: list[list[int]]) -> list[list[int]]:
         ]
     ]
 
-#Expand Key
-# Computes round keys for each round.
-# It employs a round constant array (Rcon) to generate the necessary keys.  
-
-
 #G function
 # The g function is shown in the next diagram. It is very similar to AES, first rotating the nibbles
 # and then putting them through the S-boxes. The main difference is that the round constant is produced using x^(j+2)
@@ -119,3 +114,104 @@ def mix_columns(state: list[list[int]]) -> list[list[int]]:
 # and 0000 for the second nibble.
 # The second time you use x^4 = 0011 for the first nibble
 # and 0000 for the second nibble.
+
+# Round constants for the first and second rounds
+# 0b10000000 and 0b00110000
+RCON = [[0b1000, 0b0000],
+        [0b0011, 0b0000]]
+
+# Rotates one of the halfs of the key
+def rot_word(byte: list[int]) -> list[int]:
+    return [byte[1], byte[0]]
+
+# Applies sbox to each of the nibbles of the halved key
+def sub_word(byte: list[int]) -> list[int]:
+    return [sbox[byte[0]], sbox[byte[1]]]
+
+# Applies the g function to a byte of the key (a list of two nibbles)
+def g(byte: list[int], round_num: int) -> list[int]:
+    rcon = RCON[round_num]
+
+    tmp_byte = sub_word(rot_word(byte))
+
+    return [
+        tmp_byte[0] ^ rcon[0],
+        tmp_byte[1] ^ rcon[1]
+    ]
+
+#Expand Key
+# Computes round keys for each round.
+# It employs a round constant array (Rcon) to generate the necessary keys.  
+
+def expand_key(prev_key: list[list[int]], round_num: int) -> list[list[int]]:
+    w0 = [prev_key[0][0], prev_key[1][0]]
+    w1 = [prev_key[0][1], prev_key[1][1]]
+
+    g_w1 = g(w1, round_num)
+
+    w2 = [w0[0] ^ g_w1[0], w0[1] ^ g_w1[1]]
+    w3 = [w2[0] ^ w1[0], w2[1] ^ w1[1]]
+
+    return [w2, w3]
+
+
+#S-AES
+def saes(plaintext:str, key:int) -> int:
+    state = int_to_state(string_to_int(plaintext))
+    key_state = int_to_state(key)
+
+    round1 = expand_key(key_state, 0)
+    round2 = expand_key(round1, 1)
+
+    state = add_round_key(state, key_state)
+
+    #Round 1
+    # Substitute Nibbles -> 
+    # Shift Rows ->
+    # Mix Columns ->
+    # Add Round Key
+
+    state = add_round_key((mix_columns(shift_rows(substitute_nibbles(state)))),round1)
+
+    #Round 2
+    # Substitute Nibbles ->
+    # Shift Rows ->
+    # Add Round key
+
+    state = add_round_key(shift_rows(substitute_nibbles(state)),round2) 
+
+    return state_to_int(state)
+
+def print_saes(plaintext:str, key:int) -> int:
+    state = int_to_state(string_to_int(plaintext))
+    key_state = int_to_state(key)
+
+    round1 = expand_key(key_state, 0)
+    round2 = expand_key(round1, 1)
+
+    state = add_round_key(state, key_state)
+
+    print(f"First key: {hex(key)}")
+    print(f"Round 1 key: {hex(state_to_int(round1))}")
+    print(f"Round 2 key: {hex(state_to_int(round2))}")
+    print(f"Add round key: {hex(state_to_int(state))}")
+
+    print(f"\nRound 1")
+    state = substitute_nibbles(state)
+    print(f"Substitute nibbles: {hex(state_to_int(state))}")
+    state = shift_rows(state)
+    print(f"Shift rows: {hex(state_to_int(state))}")
+    state = mix_columns(state)
+    print(f"Mix columns: {hex(state_to_int(state))}")
+    state = add_round_key(state, round1)
+    print(f"Add round key: {hex(state_to_int(state))}")
+
+    print(f"\nRound 2")
+    state = substitute_nibbles(state)
+    print(f"Substitute nibbles: {hex(state_to_int(state))}")
+    state = shift_rows(state)
+    print(f"Shift rows: {hex(state_to_int(state))}")
+    state = add_round_key(state, round2)
+    print(f"Add round key: {hex(state_to_int(state))}")
+
+    return hex(state_to_int(state))
