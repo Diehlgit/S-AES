@@ -1,3 +1,5 @@
+import base64 as b64
+
 #Auxiliary functions to process strings input into the required formats
 # input : ASCII encoded str, two chars lenght
 
@@ -182,7 +184,7 @@ def saes(plaintext:str, key:int) -> int:
 
     return state_to_int(state)
 
-def print_hex_saes(plaintext:str, key:int) -> int:
+def print_saes(plaintext:str, key:int) -> int:
     state = int_to_state(string_to_int(plaintext))
     key_state = int_to_state(key)
 
@@ -191,61 +193,31 @@ def print_hex_saes(plaintext:str, key:int) -> int:
 
     state = add_round_key(state, key_state)
 
-    print(f"First key: {hex(key)}")
-    print(f"Round 1 key: {hex(state_to_int(round1))}")
-    print(f"Round 2 key: {hex(state_to_int(round2))}")
-    print(f"Add round key: {hex(state_to_int(state))}")
+    print(f"First key: 0x{key:04x}")
+    print(f"Round 1 key: 0x{state_to_int(round1):04x}")
+    print(f"Round 2 key: 0x{state_to_int(round2):04x}")
+    print(f"Add round key: 0x{state_to_int(state):04x}")
 
     print(f"\nRound 1")
     state = substitute_nibbles(state)
-    print(f"Substitute nibbles: {hex(state_to_int(state))}")
+    print(f"Substitute nibbles: 0x{state_to_int(state):04x}")
     state = shift_rows(state)
-    print(f"Shift rows: {hex(state_to_int(state))}")
+    print(f"Shift rows: 0x{state_to_int(state):04x}")
     state = mix_columns(state)
-    print(f"Mix columns: {hex(state_to_int(state))}")
+    print(f"Mix columns: 0x{state_to_int(state):04x}")
     state = add_round_key(state, round1)
-    print(f"Add round key: {hex(state_to_int(state))}")
+    print(f"Add round key: 0x{state_to_int(state):04x}")
 
     print(f"\nRound 2")
     state = substitute_nibbles(state)
-    print(f"Substitute nibbles: {hex(state_to_int(state))}")
+    print(f"Substitute nibbles: 0x{state_to_int(state):04x}")
     state = shift_rows(state)
-    print(f"Shift rows: {hex(state_to_int(state))}")
+    print(f"Shift rows: 0x{state_to_int(state):04x}")
     state = add_round_key(state, round2)
-    print(f"Add round key: {hex(state_to_int(state))}")
+    print(f"Add round key: 0x{state_to_int(state):04x}")
 
-    return hex(state_to_int(state))
+    print(f"\nFinal results")
+    print(f"Hex encoded ciphertext: 0x{state_to_int(state):04x}")
+    print(f"Base64 encoded ciphertext: {b64.b64encode((state_to_int(state)).to_bytes(2, byteorder="big")).decode("ascii")}")
 
-def print_bin_saes(plaintext:str, key:int) -> int:
-    state = int_to_state(string_to_int(plaintext))
-    key_state = int_to_state(key)
 
-    round1 = expand_key(key_state, 0)
-    round2 = expand_key(round1, 1)
-
-    state = add_round_key(state, key_state)
-
-    print(f"First key: {bin(key)}")
-    print(f"Round 1 key: {bin(state_to_int(round1))}")
-    print(f"Round 2 key: {bin(state_to_int(round2))}")
-    print(f"Add round key: {bin(state_to_int(state))}")
-
-    print(f"\nRound 1")
-    state = substitute_nibbles(state)
-    print(f"Substitute nibbles: {bin(state_to_int(state))}")
-    state = shift_rows(state)
-    print(f"Shift rows: {bin(state_to_int(state))}")
-    state = mix_columns(state)
-    print(f"Mix columns: {bin(state_to_int(state))}")
-    state = add_round_key(state, round1)
-    print(f"Add round key: {bin(state_to_int(state))}")
-
-    print(f"\nRound 2")
-    state = substitute_nibbles(state)
-    print(f"Substitute nibbles: {bin(state_to_int(state))}")
-    state = shift_rows(state)
-    print(f"Shift rows: {bin(state_to_int(state))}")
-    state = add_round_key(state, round2)
-    print(f"Add round key: {bin(state_to_int(state))}")
-
-    return bin(state_to_int(state))
