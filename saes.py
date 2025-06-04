@@ -70,7 +70,7 @@ def shift_rows(state: list[list[int]]) -> list[list[int]]:
 # M = | 1  4 |
 #     | 4  1 |
 # Example: | 1  4 | | D  1 | => | ((1*D) ^ (4*A)) ((1*1) ^ (4*F)) |
-#         | 4  1 | | A  F |    | ((4*D) ^ (1*A)) ((4*1) ^ (1*F)) |
+#          | 4  1 | | A  F |    | ((4*D) ^ (1*A)) ((4*1) ^ (1*F)) |
 # In the above example addition is done mod 2 (xor)
 # And multiplication is done mod x⁴ + x + 1 (mod 0x13)
 
@@ -92,6 +92,18 @@ def gf16_mul(a:int, b:int) -> int:
         if a & 0b10000:
             a ^= 0x13
     return result & 0xF
+
+def mix_columns(state: list[list[int]]) -> list[list[int]]:
+    return [
+        [
+         gf16_mul(1, state[0][0]) ^ gf16_mul(4, state[1][0]), 
+         gf16_mul(1, state[0][1]) ^ gf16_mul(4, state[1][1])
+        ],
+        [
+         gf16_mul(4, state[0][0]) ^ gf16_mul(1, state[1][0]),
+         gf16_mul(4, state[0][1]) ^ gf16_mul(1, state[1][1]) 
+        ]
+    ]
 
 #Expand Key
 # Computes round keys for each round.
