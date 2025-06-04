@@ -182,7 +182,7 @@ def saes(plaintext:str, key:int) -> int:
 
     return state_to_int(state)
 
-def print_saes(plaintext:str, key:int) -> int:
+def print_hex_saes(plaintext:str, key:int) -> int:
     state = int_to_state(string_to_int(plaintext))
     key_state = int_to_state(key)
 
@@ -215,3 +215,37 @@ def print_saes(plaintext:str, key:int) -> int:
     print(f"Add round key: {hex(state_to_int(state))}")
 
     return hex(state_to_int(state))
+
+def print_bin_saes(plaintext:str, key:int) -> int:
+    state = int_to_state(string_to_int(plaintext))
+    key_state = int_to_state(key)
+
+    round1 = expand_key(key_state, 0)
+    round2 = expand_key(round1, 1)
+
+    state = add_round_key(state, key_state)
+
+    print(f"First key: {bin(key)}")
+    print(f"Round 1 key: {bin(state_to_int(round1))}")
+    print(f"Round 2 key: {bin(state_to_int(round2))}")
+    print(f"Add round key: {bin(state_to_int(state))}")
+
+    print(f"\nRound 1")
+    state = substitute_nibbles(state)
+    print(f"Substitute nibbles: {bin(state_to_int(state))}")
+    state = shift_rows(state)
+    print(f"Shift rows: {bin(state_to_int(state))}")
+    state = mix_columns(state)
+    print(f"Mix columns: {bin(state_to_int(state))}")
+    state = add_round_key(state, round1)
+    print(f"Add round key: {bin(state_to_int(state))}")
+
+    print(f"\nRound 2")
+    state = substitute_nibbles(state)
+    print(f"Substitute nibbles: {bin(state_to_int(state))}")
+    state = shift_rows(state)
+    print(f"Shift rows: {bin(state_to_int(state))}")
+    state = add_round_key(state, round2)
+    print(f"Add round key: {bin(state_to_int(state))}")
+
+    return bin(state_to_int(state))
