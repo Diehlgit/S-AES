@@ -221,3 +221,18 @@ def print_saes(plaintext:str, key:int) -> int:
     print(f"Base64 encoded ciphertext: {b64.b64encode((state_to_int(state)).to_bytes(2, byteorder="big")).decode("ascii")}")
 
 
+#PARTE 2 (ECB)
+# encrypts a ASCII encoded string 16 bits at a time
+# (blocks of size 16)
+
+def encrypt_saes_ecb(text:str, key:int):
+    ciphertext = bytearray()
+    for i in range(0, len(text), 2):
+        block = text[i:i+2]
+        if len(block) < 2:
+            block = block.ljust(2, '\x00')
+
+        ct = saes(block, key)
+        ciphertext += ct.to_bytes(2, byteorder="big")
+        
+    return b64.b64encode(ciphertext).decode("utf-8")
